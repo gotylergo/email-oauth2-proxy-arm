@@ -1,0 +1,39 @@
+services:
+  email-oauth2-proxy:
+    image: gotylergo/email-oauth2-proxy-arm:latest
+    container_name: email-oauth2-proxy
+    hostname: smtpproxy.globa.one
+    restart: unless-stopped
+    ports:
+      - "8200:8080" # Web interface for initial authentication
+      - "587:8000" # SMTP proxy port (for apps to connect to)
+    environment:
+      # Google OAuth 2.0 Credentials (REQUIRED)
+      # Replace with your actual values for deployment
+      - OAUTH2_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+      - OAUTH2_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+      - OAUTH2_USER_EMAIL=your_email@gmail.com
+      - OAUTH2_SCOPES=https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email
+      - UPSTREAM_SMTP_HOST=smtp.gmail.com
+      - UPSTREAM_SMTP_PORT=587
+      - OAUTH2_REDIRECT_URI=https://smtpproxy.globa.one/oauth2/callback
+      - LOGFILE=True
+      - DEBUG=True # Set to False for production
+
+    volumes:
+      - email-oauth2-proxy-data:/data # Persistent storage for OAuth tokens
+
+    networks:
+      # If you have a custom proxy network, ensure it's defined as external
+      - proxy
+      - default
+
+volumes:
+  email-oauth2-proxy-data:
+
+networks:
+  proxy:
+    external: true
+  default:
+    driver: bridge
+
